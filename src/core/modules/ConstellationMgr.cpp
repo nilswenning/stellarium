@@ -694,7 +694,14 @@ void ConstellationMgr::draw(StelCore* core)
 	drawLines(sPainter, core);
 	drawNames(sPainter);
 	drawArt(sPainter);
-	drawBoundaries(sPainter);
+	Vec3d vel(0.);
+	if (core->getUseAberration())
+	{
+		vel=core->getCurrentPlanet()->getHeliocentricEclipticVelocity();
+		vel=StelCore::matVsop87ToJ2000*vel;
+		vel*=core->getAberrationFactor() * (AU/(86400.0*SPEED_OF_LIGHT));
+	}
+	drawBoundaries(sPainter, vel);
 }
 
 // Draw constellations art textures
@@ -1446,7 +1453,7 @@ bool ConstellationMgr::loadBoundaries(const QString& boundaryFile)
 	return true;
 }
 
-void ConstellationMgr::drawBoundaries(StelPainter& sPainter) const
+void ConstellationMgr::drawBoundaries(StelPainter& sPainter, const Vec3d &obsVelocity) const
 {
 	const float ppx = static_cast<float>(sPainter.getProjector()->getDevicePixelsPerPixel());
 	sPainter.setBlending(false);
@@ -1455,7 +1462,7 @@ void ConstellationMgr::drawBoundaries(StelPainter& sPainter) const
 	sPainter.setLineSmooth(true);
 	for (auto* constellation : constellations)
 	{
-		constellation->drawBoundaryOptim(sPainter);
+		constellation->drawBoundaryOptim(sPainter, obsVelocity);
 	}
 	if (constellationBoundariesThickness>1 || ppx>1.f)
 		sPainter.setLineWidth(1); // restore line thickness
