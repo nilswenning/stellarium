@@ -65,7 +65,6 @@ class SolarSystem : public StelObjectModule
 	Q_PROPERTY(bool flagPointer			READ getFlagPointer			WRITE setFlagPointer			NOTIFY flagPointerChanged)
 	// was bool nativeNamesDisplayed
 	Q_PROPERTY(bool flagNativePlanetNames		READ getFlagNativePlanetNames		WRITE setFlagNativePlanetNames		NOTIFY flagNativePlanetNamesChanged)
-	Q_PROPERTY(bool flagTranslatedNames		READ getFlagTranslatedNames		WRITE setFlagTranslatedNames		NOTIFY flagTranslatedNamesChanged)
 	Q_PROPERTY(bool planetsDisplayed		READ getFlagPlanets			WRITE setFlagPlanets			NOTIFY flagPlanetsDisplayedChanged)
 	Q_PROPERTY(bool flagPlanetsOrbitsOnly		READ getFlagPlanetsOrbitsOnly		WRITE setFlagPlanetsOrbitsOnly		NOTIFY flagPlanetsOrbitsOnlyChanged)
 	Q_PROPERTY(bool flagPermanentOrbits		READ getFlagPermanentOrbits		WRITE setFlagPermanentOrbits		NOTIFY flagPermanentOrbitsChanged)
@@ -198,10 +197,16 @@ public:
 		return searchByName(id);
 	}
 
-	virtual QStringList listAllObjects(bool inEnglish) const Q_DECL_OVERRIDE;
-	virtual QStringList listAllObjectsByType(const QString& objType, bool inEnglish) const Q_DECL_OVERRIDE;
-	virtual QString getName() const Q_DECL_OVERRIDE { return "Solar System"; }
-	virtual QString getStelObjectType() const Q_DECL_OVERRIDE { return Planet::PLANET_TYPE; }
+	//! Find and return the list of at most maxNbItem objects auto-completing the passed object name.
+	//! @param objPrefix the case insensitive first letters of the searched object
+	//! @param maxNbItem the maximum number of returned object names
+	//! @param useStartOfWords the autofill mode for returned objects names
+	//! @return a list of matching object name by order of relevance, or an empty list if nothing match
+	virtual QStringList listMatchingObjects(const QString& objPrefix, int maxNbItem=5, bool useStartOfWords=false) const;
+	virtual QStringList listAllObjects(bool inEnglish) const;
+	virtual QStringList listAllObjectsByType(const QString& objType, bool inEnglish) const;
+	virtual QString getName() const { return "Solar System"; }
+	virtual QString getStelObjectType() const { return Planet::PLANET_TYPE; }
 
 public slots:
 	///////////////////////////////////////////////////////////////////////////
@@ -635,11 +640,6 @@ public slots:
 	//! Get the current value of the flag which enables showing native names for planets or not.
 	bool getFlagNativePlanetNames(void) const;
 
-	//! Set flag which enable use translated names for planets or not.
-	void setFlagTranslatedNames(bool b);
-	//! Get the current value of the flag which enables showing translated names for planets or not.
-	bool getFlagTranslatedNames(void) const;
-
 	//! Set flag which enabled the showing of isolated trails for selected objects only or not
 	void setFlagIsolatedTrails(bool b);
 	//! Get the current value of the flag which enables showing of isolated trails for selected objects only or not.
@@ -728,7 +728,6 @@ signals:
 	void maxTrailPointsChanged(int max);
 	void flagPointerChanged(bool b);
 	void flagNativePlanetNamesChanged(bool b);
-	void flagTranslatedNamesChanged(bool b);
 	void flagPlanetsDisplayedChanged(bool b);
 	void flagPlanetsOrbitsOnlyChanged(bool b);
 	void flagPermanentOrbitsChanged(bool b);
@@ -1060,7 +1059,6 @@ private:
 	bool flagShow;
 	bool flagPointer;                           // show red cross selection pointer?
 	bool flagNativePlanetNames;                 // show native names for planets?
-	bool flagTranslatedNames;                   // show translated names?
 	bool flagIsolatedTrails;
 	int numberIsolatedTrails;
 	int maxTrailPoints;                         // limit trails to a manageable size.
@@ -1094,7 +1092,7 @@ private:
 	Vec3f trailsColor;
 	Vec3f pointerColor;
 
-	QHash<QString, QString> planetNativeNamesMap;
+	QHash<QString, QString> planetNativeNamesMap, planetNativeNamesMeaningMap;
 	QStringList minorBodies;
 
 	Vec3d lightTimeSunPosition;			// when observing a solar eclipse, we need solar position 8 minutes ago.

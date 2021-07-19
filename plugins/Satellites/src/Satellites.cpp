@@ -72,7 +72,7 @@ StelPluginInfo SatellitesStelPluginInterface::getPluginInfo() const
 	info.id = "Satellites";
 	info.displayedName = N_("Satellites");
 	info.authors = "Matthew Gates, Jose Luis Canales";
-	info.contact = "https://github.com/Stellarium/stellarium";
+	info.contact = STELLARIUM_DEV_URL;
 	info.description = N_("Prediction of artificial satellite positions in Earth orbit based on NORAD TLE data");
 	info.version = SATELLITES_PLUGIN_VERSION;
 	info.license = SATELLITES_PLUGIN_LICENSE;
@@ -153,7 +153,7 @@ void Satellites::init()
 
 		// key bindings and other actions		
 		QString satGroup = N_("Satellites");
-		addAction("actionShow_Satellite_Hints", satGroup, N_("Satellite hints"), "flagHintsVisible", "Ctrl+Z");
+		addAction("actionShow_Satellite_Hints", satGroup, N_("Artificial satellites"), "flagHintsVisible", "Ctrl+Z");
 		addAction("actionShow_Satellite_Labels", satGroup, N_("Satellite labels"), "flagLabelsVisible", "Alt+Shift+Z");
 		addAction("actionShow_Satellite_ConfigDialog_Global", satGroup, N_("Satellites configuration window"), configDialog, "visible", "Alt+Z");		
 
@@ -224,7 +224,7 @@ void Satellites::translateData()
 	for (const auto& sat : qAsConst(satellites))
 	{
 		if (sat->initialized)
-			sat->recomputeEpochTLE();
+			sat->recomputeSatData();
 	}
 }
 
